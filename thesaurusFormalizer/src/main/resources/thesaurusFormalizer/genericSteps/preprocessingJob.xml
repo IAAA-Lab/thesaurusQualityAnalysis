@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<!-- ############################################################# -->
+	<!-- definicion del lanzador y repositorio de trabajos -->
+	<beans:import resource="../applicationContext.xml" />
+	
+	<!-- ############################################################# -->
+	<!-- fichero de configuración del que se sacan las propiedades comunes de los bean -->
+ 	<context:property-placeholder location="file:./src/main/resources/thesaurusFormalizer/genericSteps/genericSteps.properties" ignore-unresolvable="true"/>
+ 	
+ 	<!-- ############################################################# -->
+ 	<!-- ############################################################# -->
+	<!-- realiza todas las tareas de preprocesamiendo necesarias para que el alineamiento con wordnet y dolce funcione -->
+	<batch:job id="preprocessingJob">
+		<!-- (1) genera un hash con el alineamiento entre wordnet y dolce -->
+		<batch:step id="wnetDolceAlignHashGeneration" next="spanishWordNetHashGeneration">
+			<batch:tasklet ref="wnetDolceAlignHashGeneration_tasklet"/>
+		</batch:step>
+		
+		<!-- (2) genera un hash con los pares etiqueta-synset del wordnet en español -->
+		<batch:step id="spanishWordNetHashGeneration" next="frenchWordNetHashGeneration">
+			<batch:tasklet ref="spanishHashGeneration_tasklet"/>
+		</batch:step>
+		
+		<!-- (3) genera un hash con los pares etiqueta-synset del wordnet en ingles -->
+		<batch:step id="frenchWordNetHashGeneration">
+			<batch:tasklet ref="frenchHashGeneration_tasklet"/>
+		</batch:step>
+	</batch:job>
+	
+	<!-- ############################################################# -->
+	<!-- ############################################################# -->
+	<!-- (1) genera un hash con el alineamiento entre wordnet y dolce -->
+	<beans:bean id="wnetDolceAlignHashGeneration_tasklet" class="thesaurusFormalizer.preprocesing.Tasklet_WNetDolceAlighHashGenerator"> 
+		<beans:property name="WNDolceAligment" value="${wordnet.dolce.alignment.file}" /> 
+		<beans:property name="WNDolceHash" value="${wordnet.dolce.alignment.hash}" />
+	</beans:bean>
+
+    <!-- ############################################################# -->
+	<!-- (2) genera un hash con los pares etiqueta-synset del wordnet en español -->
+	<beans:bean id="spanishHashGeneration_tasklet" class="thesaurusFormalizer.preprocesing.Tasklet_OpenWordnetLangHashGenerator"> 
+		<beans:property name="sourceFile" value="${wordnet.spanish.synset.file}" /> 
+		<beans:property name="destFile" value="${wordnet.spanish.synset.hash}" />
+	</beans:bean>
+	
+	<!-- ############################################################# -->
+	<!-- (3) genera un hash con los pares etiqueta-synset del wordnet en ingles -->
+	<beans:bean id="frenchHashGeneration_tasklet" class="thesaurusFormalizer.preprocesing.Tasklet_OpenWordnetLangHashGenerator"> 
+		<beans:property name="sourceFile" value="${wordnet.french.synset.file}" /> 
+		<beans:property name="destFile" value="${wordnet.french.synset.hash}" />
+	</beans:bean>
+
+</beans:beans>

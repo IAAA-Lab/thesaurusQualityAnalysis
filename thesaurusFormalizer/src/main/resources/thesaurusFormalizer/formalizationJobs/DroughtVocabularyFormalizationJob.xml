@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+ 
+ 	<!-- ############################################################# -->
+	<!-- importación del trabajo de alineamiento base (no tiene tesauro a alinear) -->
+	<beans:import resource="../genericSteps/alignmentJob.xml" />
+	<beans:import resource="../genericSteps/analysisJob.xml" />
+	
+	<!-- ############################################################# -->
+	<!-- fichero de configuración del que se sacan las propiedades especificas del tesauro a alinear -->
+ 	<context:property-placeholder location="file:./src/main/resources/thesaurusFormalizer/formalizationJobs/DroughtVocabularyFormalizationJob.properties" ignore-unresolvable="true" />
+
+
+	<!-- ############################################################# -->	
+	<!-- realiza el alineamiento con wordnet/dolce del DroughtVocabulary y la generación del analisis de los resultados -->
+	<batch:job id="DroughtVocabularyFormalizationJob">
+		<batch:step id="alignment" next="analysis">
+			<batch:job ref="alignmentJob"/>
+		</batch:step>
+	    <batch:step id="analysis">
+			<batch:job ref="analysisJob"/>
+		</batch:step>
+	</batch:job>
+</beans:beans>

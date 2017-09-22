@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<!-- ############################################################# -->
+	<!-- definicion del lanzador y repositorio de trabajos -->
+	<beans:import resource="../applicationContext.xml" />
+
+    <!-- ############################################################# -->
+	<!-- fichero de configuración del que se sacan las propiedades comunes de los bean -->
+ 	<context:property-placeholder location="file:./src/main/resources/thesaurusFormalizer/genericSteps/genericSteps.properties" ignore-unresolvable="true"/>
+ 	
+ 	<!-- ############################################################# -->
+ 	<!-- ############################################################# -->
+	<!-- trabajo que analiza los emparejamientos con wordnet del tesauro urbamet -->
+	<batch:job id="analysisJob">
+	    <!-- (1) tasklet que muestra datos de emparejamientos  con wnet y dolce-->
+		<batch:step id="wnetAlignAnalysis" next="wnetExcelReport">
+			<batch:tasklet ref="wordNetAlignAnalysis_tasklet"/>
+		</batch:step>
+		
+		<!-- (2) tasklet que genera un report en excel con los alineamientos para poder verificar su calidad-->
+		<batch:step id="wnetExcelReport">
+			<batch:tasklet ref="vgiExcelReport_tasklet"/>
+		</batch:step>
+	</batch:job>
+	
+	<!-- ############################################################# -->
+	<!-- ############################################################# -->
+	<!-- (1) tasklet que muestra datos de emparejamientos  con wnet y dolce-->
+	<beans:bean id="wordNetAlignAnalysis_tasklet" class="thesaurusFormalizer.analysis.Tasklet_ThesaurusFormalizationAnalyzer"> 
+		<beans:property name="fileToAnalize" value="${enriched.thesaurus.file}" /> 
+		<beans:property name="langsToAnalyze">
+			<beans:list>
+				<beans:value>en</beans:value>
+				<beans:value>es</beans:value>
+				<beans:value>fr</beans:value>
+			</beans:list>
+		</beans:property>
+		<beans:property name="resultDir" value="${analysis.directory}" />
+	</beans:bean>
+	
+	<!-- ############################################################# -->
+	<!-- (2) tasklet que genera un report en excel con los alineamientos para poder verificar su calidad-->
+	<beans:bean id="vgiExcelReport_tasklet" class="thesaurusFormalizer.analysis.Tasklet_AlignInExcelReportGenerator"> 
+		<beans:property name="fileToAnalize" value="${enriched.thesaurus.file}" /> 
+		<beans:property name="dolceFile" value="${dolce.file}" />
+		<beans:property name="resultFile" value="${analysis.summary}" />
+	</beans:bean>
+</beans:beans>

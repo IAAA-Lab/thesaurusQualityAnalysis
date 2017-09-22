@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+ 
+ 	<!-- ############################################################# -->
+	<!-- definicion del lanzador y repositorio de trabajos -->
+	<beans:import resource="../applicationContext.xml" />
+	<beans:import resource="thesaurusJenaModel.xml" />
+	
+	<!-- ############################################################# -->
+	<!-- extrae los nombres principales de las etiquetas preferidas y alternativas de un tesauro -->
+	<batch:job id="gemetWordNetAlignmentJob">
+	
+		<!-- leemos el tesauro -->
+		<batch:step id="loadThesaurus" next="extractLabelNoun">
+			<batch:tasklet ref="loadGemetModelIntoJobContext_tasklet"/>
+		</batch:step>
+		
+		<!-- obtenemos las variantes de las etiquetas de los conceptos -->	
+		<batch:step id="extractLabelNoun" next="alignSynsets">
+			<batch:tasklet>
+				<batch:chunk reader="extractLabel_reader" processor="extractLabel_processor"
+					writer="extractLabel_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		<!-- encontramos los alineamientos con wordnet (multiples) -->	
+		<batch:step id="alignSynsets" next="filterSynsets">
+			<batch:tasklet>
+				<batch:chunk reader="alignSynset_reader" processor="alignSynset_processor"
+					writer="alignSynset_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		<!-- filtramos los synsets en función del multilinguismo -->
+		<batch:step id="filterSynsets" next="filterHierarchySynsets">
+			<batch:tasklet>
+				<batch:chunk reader="modelMemory_reader" processor="filterSynset_processor"
+					writer="empty_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		<!-- filtramos los synsets en función de la estructura del tesauro y wordnet -->
+		<batch:step id="filterHierarchySynsets" next="dolceAlignUsingWNHierarchy">
+			<batch:tasklet>
+				<batch:listeners>
+					<batch:listener ref="filterhierarchySynset_processor" />
+				</batch:listeners>	
+				<batch:chunk reader="modelMemory_reader" processor="filterhierarchySynset_processor"
+					writer="empty_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		<!-- elegimos el equivalente en dolce -->
+		<batch:step id="dolceAlignUsingWNHierarchy" next="detectNewRelations">
+			<batch:tasklet>
+				<batch:chunk reader="modelMemory_reader" processor="dolceAlignUsingWNHierarchy_processor"
+					writer="empty_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		
+		
+		
+		<!-- añadimos nuevas relaciones del tesauro no existentes en el original-->	
+		
+		
+		<batch:step id="detectNewRelations" next="selectDolceRelation">
+			<batch:tasklet task-executor="simpleTaskExecutor" throttle-limit="20">
+				<batch:chunk reader="modelMemory_reader" processor="detectNewRelations_processor"
+					writer="empty_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		
+		<!-- seleccionamos la relación de dolce mas adecuada para reemplazar NT y RT-->	
+		<batch:step id="selectDolceRelation" next="saveThesaurus">
+			<batch:tasklet>
+				<batch:chunk reader="modelMemory_reader" processor="selectDolceRelation_processor"
+					writer="empty_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		<!-- guardamos el resultado -->
+		<batch:step id="saveThesaurus">
+			<batch:tasklet ref="saveGemetAlignFromJobContext_tasklet"/>
+		</batch:step>
+	</batch:job>
+	
+	
+	<!-- ############################################################# -->
+ 	<!-- de un modelo en memoria alinea las etiquetas ya extraidas con wordnet -->			
+	<beans:bean id="alignSynset_reader" class="thesaurusFormalizer.alignment.wordnetMatch.ItemReader_Mem_ThesConceptOntologyAlignment"> 
+		<beans:property name="model" ref="thesaurusJenaModel" />
+	</beans:bean>
+	<beans:bean id="alignSynset_writer" class="thesaurusFormalizer.alignment.wordnetMatch.ItemWriter_Mem_ThesConceptOntologyAlignment"> 
+		<beans:property name="model" ref="thesaurusJenaModel" />
+	</beans:bean>
+	<beans:bean id="alignSynset_processor" class="thesaurusFormalizer.alignment.wordnetMatch.ItemProcessor_ThesConceptOntologyAlignment"> 
+		<beans:property name="langDependentExtractors">
+			<beans:props>
+				<beans:prop key="en">alignEnglishLabel_processor</beans:prop>
+				<beans:prop key="es">alignSpanishLabel_processor</beans:prop>
+				<beans:prop key="fr">alignFrenchLabel_processor</beans:prop>
+			</beans:props>
+		</beans:property>			
+	</beans:bean>
+	
+	<!-- ############################################################# -->
+	<!-- lector y escritor generico usado en muchos pasos -->
+	<beans:bean id="modelMemory_reader" class="rdfProcessing.ItemReader_Mem_To_Resource"> 
+		<beans:property name="model" ref="thesaurusJenaModel" />
+	</beans:bean>
+	<beans:bean id="empty_writer" class="rdfProcessing.ItemWriter_Resource_EmptyProcess"/> 
+	
+	<!-- ############################################################# -->
+ 	<!-- de un modelo en memoria filtra los synsets -->			
+	<beans:bean id="filterSynset_processor" class="thesaurusFormalizer.alignment.senseSelection.ItemProcessor_MultilingualSynsetSelection"/> 
+	
+	<!-- ############################################################# -->
+	<!-- alineamiento basado en jerarquía para seleccionar los synsets más adecuados -->			
+	<beans:bean id="filterhierarchySynset_processor" class="thesaurusFormalizer.alignment.senseSelection.ItemProcessor_ContextSynsetSelection"> 
+		<beans:property name="model" ref="thesaurusJenaModel" />		
+	</beans:bean>
+	
+	<!-- ############################################################# -->
+	<!-- usa la jerarquia de woednet para alinear con docle -->			
+	<beans:bean id="dolceAlignUsingWNHierarchy_processor" class="thesaurusFormalizer.alignment.dolceMatch.ItemProcessor_DolceMatchSelection"> 
+		<beans:property name="WNDolceAlignHash" value="data/temp/preprocesing/wn_doceAlignnHash.dat" />		
+	</beans:bean>
+	
+	<!-- ############################################################# -->
+ 	<!-- seleccionamos la relación de dolce mas adecuada para reemplazar NT y RT-->	
+	<beans:bean id="selectDolceRelation_processor" class="thesaurusFormalizer.alignment.relationsRedefinition.ItemProcessor_RelationsRedefiner"> 
+		<beans:property name="dolceModel" value="data/input/dolce/dolce_skosified.owl" />		
+	</beans:bean>
+	
+	<!-- ############################################################# -->
+ 	<!-- buscamos relaciones is y parte de no incluidas inicialmente en el tesauro-->	
+	<beans:bean id="detectNewRelations_processor" class="thesaurusFormalizer.alignment.relationsRedefinition.ItemProcessor_RelationsCreator"/> 
+	
+	
+	<!-- ############################################################# -->
+ 	<!-- de un modelo en memoria extrae los nombres principales de las etiquetas preferidas y alternativas de un tesauro -->			
+	<beans:bean id="extractLabel_reader" class="thesaurusFormalizer.extraction.ItemReader_Mem_ThesConceptLabelExtractor"> 
+		<beans:property name="model" ref="thesaurusJenaModel" />
+	</beans:bean>
+	<beans:bean id="extractLabel_writer" class="thesaurusFormalizer.extraction.ItemWriter_Mem_ThesConceptLabelExtractor"> 
+		<beans:property name="model" ref="thesaurusJenaModel" />
+	</beans:bean>
+	<beans:bean id="extractLabel_processor" class="thesaurusFormalizer.extraction.ItemProcessor_ThesConceptLabelExtractor"> 
+		<beans:property name="langDependentExtractors">
+			<beans:props>
+				<beans:prop key="en">extractEnglishLabel_processor</beans:prop>
+				<beans:prop key="es">extractSpanishLabel_processor</beans:prop>
+				<beans:prop key="fr">extractFrenchLabel_processor</beans:prop>
+			</beans:props>
+		</beans:property>			
+	</beans:bean>
+	
+	<!-- ############################################################# -->
+	<!-- ############################################################# -->
+	<!-- extractor de etiquetas en ingles, hace el procesamiento completo -->
+	<beans:bean id="extractEnglishLabel_processor" class="thesaurusFormalizer.extraction.ItemSubProcessor_EnglishLabelExtractor"/> 
+	
+	<!-- extractor de etiquetas en ingles, hace el procesamiento completo -->
+	<beans:bean id="extractSpanishLabel_processor" class="thesaurusFormalizer.extraction.ItemSubProcessor_SpanishLabelExtractor"/> 
+	
+	<!-- extractor de etiquetas en ingles, hace el procesamiento completo -->
+	<beans:bean id="extractFrenchLabel_processor" class="thesaurusFormalizer.extraction.ItemSubProcessor_FrenchLabelExtractor"/> 
+	
+	<!-- ############################################################# -->
+	<!-- ############################################################# -->
+	<!-- alineador de etiquetas en ingles -->
+	<beans:bean id="alignEnglishLabel_processor" class="thesaurusFormalizer.alignment.wordnetMatch.ItemSubProcessor_EnglishConceptWordNetAlignment"/> 
+	<!-- alineador de etiquetas en español -->
+	<beans:bean id="alignSpanishLabel_processor" class="thesaurusFormalizer.alignment.wordnetMatch.ItemSubProcessor_ConceptOpenWordNetAlignment"> 
+		<beans:property name="languageSynsetHash" value="diccionarios/WordNet-3.0-Spanish/wn-data-spa.bin" />
+	</beans:bean>
+	<!-- alineador de etiquetas en frances -->
+	<beans:bean id="alignFrenchLabel_processor" class="thesaurusFormalizer.alignment.wordnetMatch.ItemSubProcessor_ConceptOpenWordNetAlignment"> 
+		<beans:property name="languageSynsetHash" value="diccionarios/WordNet-3.0-French/wn-data-fra.bin" />
+	</beans:bean>
+
+	<!-- ############################################################# -->
+ 	<!-- tasklets que cargan/guardan un modelo de rdf en/desde el contexto del proyecto -->
+	<beans:bean id="loadGemetModelIntoJobContext_tasklet" class="thesaurusFormalizer.rdfManager.Tasklet_LoadRDFModelIntoJobContext"> 
+		<beans:property name="sourceCol" value="data/input/thesauri/gemet.skos.rdf" /> 
+		<beans:property name="model" ref="thesaurusJenaModel" />
+	</beans:bean>
+	
+	<beans:bean id="saveGemetAlignFromJobContext_tasklet" class="thesaurusFormalizer.rdfManager.Tasklet_SaveRDFModelFromJobContext"> 
+		<beans:property name="destCol" value="data/output/formalThes/formalGemet.rdf" />
+		<beans:property name="model" ref="thesaurusJenaModel" />
+		<beans:property name="namespaces">
+			<beans:props>
+				<beans:prop key="skos">http://www.w3.org/2004/02/skos/core#</beans:prop>
+			</beans:props>
+		</beans:property>
+	</beans:bean>
+	
+	<beans:bean id="simpleTaskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"> 
+		<beans:property name="concurrencyLimit" value="10" />
+	</beans:bean>
+	
+</beans:beans>
