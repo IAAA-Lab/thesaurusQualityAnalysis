@@ -9,7 +9,7 @@
 
 	<!-- ############################################################# -->
 	<!-- definicion del lanzador y repositorio de trabajos -->
-	<beans:import resource="../applicationContext.xml" />
+	<beans:import resource="../../applicationContext.xml" />
 	
 	<!-- ############################################################# -->
 	<!-- fichero de configuración del que se sacan las propiedades comunes de los bean -->

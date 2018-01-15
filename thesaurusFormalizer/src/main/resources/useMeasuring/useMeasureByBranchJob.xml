@@ -8,7 +8,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
  
     <!-- definicion del lanzador y repositorio de trabajos -->
-	<beans:import resource="../thesaurusFormalizer/applicationContext.xml" />
+	<beans:import resource="../applicationContext.xml" />
  
 	<!-- ############################################################# -->
 	<!-- realiza el analisis de un tesauro para determianr su uso pro ramas-->

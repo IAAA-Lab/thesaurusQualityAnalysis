@@ -9,32 +9,31 @@
 
 	<!-- ############################################################# -->
 	<!-- definicion del lanzador y repositorio de trabajos -->
-	<beans:import resource="../applicationContext.xml" />
+	<beans:import resource="../../applicationContext.xml" />
 
     <!-- ############################################################# -->
 	<!-- fichero de configuración del que se sacan las propiedades comunes de los bean -->
  	<context:property-placeholder location="file:./src/main/resources/thesaurusFormalizer/genericSteps/genericSteps.properties" ignore-unresolvable="true"/>
  	
- 	<!-- ############################################################# -->
- 	<!-- ############################################################# -->
-	<!-- trabajo que analiza los emparejamientos con wordnet del tesauro urbamet -->
-	<batch:job id="analysisJob">
-	    <!-- (1) tasklet que muestra datos de emparejamientos  con wnet y dolce-->
-		<batch:step id="wnetAlignAnalysis" next="wnetExcelReport">
-			<batch:tasklet ref="wordNetAlignAnalysis_tasklet"/>
-		</batch:step>
-		
-		<!-- (2) tasklet que genera un report en excel con los alineamientos para poder verificar su calidad-->
-		<batch:step id="wnetExcelReport">
-			<batch:tasklet ref="vgiExcelReport_tasklet"/>
-		</batch:step>
-	</batch:job>
+	<!-- ############################################################# -->
+	<!-- ############################################################# -->
 	
 	<!-- ############################################################# -->
-	<!-- ############################################################# -->
-	<!-- (1) tasklet que muestra datos de emparejamientos  con wnet y dolce-->
+	<!-- (1a) carga el tdb y lo deja en el modelo indicado -->
+	<beans:bean id="loadTDBModelIntoJobContextAnalysis_tasklet" class="rdfProcessing.Tasklet_LoadRDFModelIntoJobContext"> 
+		<beans:property name="model" ref="beanModelContainerAnalysis" />
+		<beans:property name="sourceTDB" value="${temporal.tdb.dir}" /> 
+	</beans:bean>
+	
+	<!-- (1b) carga el fichero rdf y lo deja en el modelo indicado -->
+	<beans:bean id="loadFileModelIntoJobContextAnalysis_tasklet" class="rdfProcessing.Tasklet_LoadRDFModelIntoJobContext"> 
+		<beans:property name="model" ref="beanModelContainerAnalysis" />
+		<beans:property name="sourceFile" value="${enriched.thesaurus.file}" />
+	</beans:bean>
+	
+	<!-- (2) tasklet que muestra datos de emparejamientos  con wnet y dolce-->
 	<beans:bean id="wordNetAlignAnalysis_tasklet" class="thesaurusFormalizer.analysis.Tasklet_ThesaurusFormalizationAnalyzer"> 
-		<beans:property name="fileToAnalize" value="${enriched.thesaurus.file}" /> 
+		<beans:property name="model" ref="beanModelContainerAnalysis" />
 		<beans:property name="langsToAnalyze">
 			<beans:list>
 				<beans:value>en</beans:value>
@@ -46,10 +45,15 @@
 	</beans:bean>
 	
 	<!-- ############################################################# -->
-	<!-- (2) tasklet que genera un report en excel con los alineamientos para poder verificar su calidad-->
+	<!-- (3) tasklet que genera un report en excel con los alineamientos para poder verificar su calidad-->
 	<beans:bean id="vgiExcelReport_tasklet" class="thesaurusFormalizer.analysis.Tasklet_AlignInExcelReportGenerator"> 
-		<beans:property name="fileToAnalize" value="${enriched.thesaurus.file}" /> 
+		<beans:property name="model" ref="beanModelContainerAnalysis" /> 
 		<beans:property name="dolceFile" value="${dolce.file}" />
 		<beans:property name="resultFile" value="${analysis.summary}" />
 	</beans:bean>
+	
+	<!-- ############################################################# -->
+	<!-- ############################################################# -->
+	<!-- Modelo donde se almacenan los datos del tesauro para su formalizacion, usado en muchos pasos -->
+	<beans:bean id="beanModelContainerAnalysis" class="rdfProcessing.Bean_ModelContainer"/>
 </beans:beans>

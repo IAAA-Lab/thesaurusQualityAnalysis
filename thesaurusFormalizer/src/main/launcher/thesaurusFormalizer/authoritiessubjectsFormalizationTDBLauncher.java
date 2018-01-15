@@ -5,10 +5,10 @@ import org.springframework.batch.core.launch.support.CommandLineJobRunner;
 /**
  * Lanzador del programa de extracción de nombres de etiquetas de conceptos
  */
-public class authoritiessubjectsFormalizationLauncher {
+public class authoritiessubjectsFormalizationTDBLauncher {
 	// trabajo de spring a ejecutar
 	private static final String[] jobC = {
-			"thesaurusFormalizer/formalizationJobs/authoritiessubjectsFormalizationJob.xml",
+			"thesaurusFormalizer/formalizationJobs/authoritiessubjectsFormalizationTDBJob.xml",
 			"authoritiessubjectsFormalizationJob" };
 
 	/*****************************************************************/

@@ -6,6 +6,8 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemWriter;
 
+import rdfProcessing.Bean_ModelContainer;
+
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -19,7 +21,7 @@ import thesaurusFormalizer.rdfManager.ThesFormalizerRDFPropertyManager;
 public class ItemWriter_Mem_ThesConceptOntologyAlignment implements ItemWriter<ExtractedSynsetInfo> {
 	
 	//modelo a procesar
-	private Model model;
+	private Bean_ModelContainer model;
 	private static Property inner_conceptSynset = ThesFormalizerRDFPropertyManager.inner_conceptSynset; 
 	
 	/***********************************************************/
@@ -27,14 +29,15 @@ public class ItemWriter_Mem_ThesConceptOntologyAlignment implements ItemWriter<E
 	 * escribe las etiquetas extraidas para cada idioma en el modelo de jena separadas por |
 	 */
 	public void write(List<? extends ExtractedSynsetInfo> items) throws Exception {
+		Model mod = model.startOrContinueTransactionOnModel();
 		for(ExtractedSynsetInfo item:items){
 			List<String> align = item.getAlignments();
 			if(align!=null){
 				String result=item.getType();			
 				for (String synid: align){result+="|"+synid;}				
-				Resource concept = model.getResource(item.getUri());
-				Literal labs = model.createLiteral(result, item.getLang());
-				model.add(concept,inner_conceptSynset ,labs);
+				Resource concept = mod.getResource(item.getUri());
+				Literal labs = mod.createLiteral(result, item.getLang());
+				mod.add(concept,inner_conceptSynset ,labs);
 			}
 		}
 	}	
@@ -52,6 +55,6 @@ public class ItemWriter_Mem_ThesConceptOntologyAlignment implements ItemWriter<E
 	/**
 	 * propiedades del bean
 	 */
-	public void setModel(Model model) {this.model = model;}
+	public void setModel(Bean_ModelContainer model) {this.model = model;}
 	
 }

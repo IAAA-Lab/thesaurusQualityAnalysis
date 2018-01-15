@@ -9,6 +9,7 @@ import org.springframework.batch.item.ItemProcessor;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
@@ -173,7 +174,9 @@ public class ItemProcessor_RelationsCreator implements ItemProcessor<Resource, R
 	 */
 	private HashMap <Resource, List<Resource>> getAllBroaders(Model modelo){
 		HashMap<Resource,List<Resource>> result = new HashMap<Resource,List<Resource>>();
-		for(Resource res:modelo.listSubjects().toList()){
+		ResIterator it = modelo.listSubjects();
+		while (it.hasNext()){
+		    Resource res = it.next();
 			result.put(res, getBroaders(res, new ArrayList<Resource>()));
 		}
 		return result;
@@ -203,7 +206,9 @@ public class ItemProcessor_RelationsCreator implements ItemProcessor<Resource, R
 	 */
 	private HashMap<Resource,Synset> getconceptSynsets(Model modelo, HashMap<Resource,String> type){
 		HashMap<Resource,Synset> result = new HashMap<Resource,Synset>();
-		for(Resource res:modelo.listSubjects().toList()){
+		ResIterator it = modelo.listSubjects();
+		while (it.hasNext()){
+		    Resource res = it.next();
 			Synset s =null;
 			String types = null;
 			if(res.hasProperty(exact_wordnetMatch)){

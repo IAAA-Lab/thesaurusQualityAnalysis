@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.poi.ss.usermodel.Row;
@@ -258,8 +259,9 @@ public class Tasklet_UseMeasureByBranch implements Tasklet{
 			return top;
 		}
 		
-		List<Resource> concepts = m.listSubjects().toList();
-		for(Resource c:concepts){
+		ResIterator ite = m.listSubjects();
+		while(ite.hasNext()){
+		    Resource c = ite.next();
 			if(!c.hasProperty(RDFPropertyManager.skosBroaderProp)){top.add(c);}
 		}
 		Resource sch = m.createResource();

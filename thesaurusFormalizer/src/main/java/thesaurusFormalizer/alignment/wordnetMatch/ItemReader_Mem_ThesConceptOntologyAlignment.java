@@ -11,6 +11,8 @@ import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
 
+import rdfProcessing.Bean_ModelContainer;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -25,7 +27,7 @@ import thesaurusFormalizer.rdfManager.ThesFormalizerRDFPropertyManager;
 public class ItemReader_Mem_ThesConceptOntologyAlignment implements
 			ItemReader<org.apache.jena.rdf.model.Statement>, ItemStream {
 	//modelo a procesar
-	private Model model;
+	private Bean_ModelContainer model;
 	
 	//etiquetas del modelo
 	private Iterator<Statement> etiquetasIt;
@@ -49,9 +51,9 @@ public class ItemReader_Mem_ThesConceptOntologyAlignment implements
 	/**
 	 * carga las etiquetas del modelo (prefs y alts)
 	 */
-	public void open(ExecutionContext executionContext)
-			throws ItemStreamException {
-		List<Statement> etiquetas = model.listStatements(null,inner_conceptNoun , (RDFNode)null).toList();
+	public void open(ExecutionContext executionContext) throws ItemStreamException {
+		Model mod = model.startOrContinueTransactionOnModel();
+		List<Statement> etiquetas = mod.listStatements(null,inner_conceptNoun , (RDFNode)null).toList();
 		etiquetasIt = etiquetas.iterator();
 	}
 
@@ -66,5 +68,5 @@ public class ItemReader_Mem_ThesConceptOntologyAlignment implements
 	/**
 	 * propiedades del bean
 	 */
-	public void setModel(Model model) {this.model = model;}
+	public void setModel(Bean_ModelContainer model) {this.model = model;}
 }

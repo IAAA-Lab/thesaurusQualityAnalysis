@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+ 
+ 	<!-- ############################################################# -->
+	<!-- definicion del lanzador y repositorio de trabajos -->
+	<beans:import resource="../../applicationContext.xml" />
+	
+	<!-- ############################################################# -->
+	<!-- fichero donde están definidos los beans -->
+	<beans:import resource="./alignmentBeans.xml" />
+	
+ 	<!-- ############################################################# -->
+	<!-- ############################################################# -->
+	<!-- extrae los nombres principales de las etiquetas preferidas y alternativas de un tesauro -->
+	<batch:job id="alignmentJob">	
+	
+		
+		<!-- (0) cargamos el tesauro en un tdb2-->
+		<batch:step id="loadInTDB2" next="accessToThesaurus">
+			<batch:tasklet ref="loadInTDB2_tasklet"/>
+		</batch:step>
+	
+		<!-- (1) creamos el objeto model para acceder al tesauro -->
+		<batch:step id="accessToThesaurus" next="extractLabelNoun">
+			<batch:tasklet ref="loadTDBModelIntoJobContext_tasklet"/>
+		</batch:step>
+				
+		<!--(2) extraemos el sustantivo principal de las etiquetas preferidas y alternativas -->	
+		<batch:step id="extractLabelNoun" next="alignSynsets">
+			<batch:tasklet>
+				<batch:chunk reader="extractLabel_reader" processor="extractLabel_processor"
+					writer="extractLabel_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+			
+		<!-- (3) encontramos todos los alineamientos con wordnet -->	
+		<batch:step id="alignSynsets" next="filterSynsets">
+			<batch:tasklet>
+				<batch:chunk reader="alignSynset_reader" processor="alignSynset_processor"
+					writer="alignSynset_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		<!-- (4) nos quedamos los synsets de una etiqueta comunes a los distintos idiomas  -->
+		<batch:step id="filterSynsets" next="filterHierarchySynsets">
+			<batch:tasklet>
+				<batch:chunk reader="modelMemory_reader" processor="filterSynset_processor"
+					writer="empty_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		<!-- (5) filtramos los synsets en función de la estructura del tesauro y wordnet -->
+		<batch:step id="filterHierarchySynsets" next="dolceAlignUsingWNHierarchy">
+			<batch:tasklet>
+				<batch:listeners>
+					<batch:listener ref="filterhierarchySynset_processor" />
+				</batch:listeners>	
+				<batch:chunk reader="modelMemory_reader" processor="filterhierarchySynset_processor"
+					writer="empty_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		<!-- (6) dado un synset seleccionado elegimos el equivalente en dolce -->
+		<batch:step id="dolceAlignUsingWNHierarchy" next="selectDolceRelation">
+			<batch:tasklet>
+				<batch:chunk reader="modelMemory_reader" processor="dolceAlignUsingWNHierarchy_processor"
+					writer="empty_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		<!-- (7) seleccionamos la relación de dolce mas adecuada para reemplazar NT y RT-->	
+		<batch:step id="selectDolceRelation" next="saveThesaurus">
+			<batch:tasklet>
+				<batch:chunk reader="modelMemory_reader" processor="selectDolceRelation_processor"
+					writer="empty_writer" commit-interval="1" />
+			</batch:tasklet>
+		</batch:step>
+		
+		<!-- (9) guardamos el tesauro extendido con toda la información encontrada -->
+		<batch:step id="saveThesaurus">
+<!--			<batch:tasklet ref="saveTDBAlignFromJobContext_tasklet"/> -->
+			<batch:tasklet ref="saveFileAlignFromJobContext_tasklet"/>
+		</batch:step>
+	
+	</batch:job>
+	
+</beans:beans>

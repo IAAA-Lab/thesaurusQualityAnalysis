@@ -6,6 +6,8 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemWriter;
 
+import rdfProcessing.Bean_ModelContainer;
+
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -19,7 +21,7 @@ import thesaurusFormalizer.rdfManager.ThesFormalizerRDFPropertyManager;
 public class ItemWriter_Mem_ThesConceptLabelExtractor implements ItemWriter<ExtractedLabelInfo> {
 	
 	//modelo a procesar
-	private Model model;
+	private Bean_ModelContainer model;
 	private static Property inner_conceptNoun = ThesFormalizerRDFPropertyManager.inner_conceptNoun; 
 	
 	/***********************************************************/
@@ -27,6 +29,7 @@ public class ItemWriter_Mem_ThesConceptLabelExtractor implements ItemWriter<Extr
 	 * escribe las etiquetas extraidas para cada idioma en el modelo de jena separadas por |
 	 */
 	public void write(List<? extends ExtractedLabelInfo> items) throws Exception {
+		Model mod = model.startOrContinueTransactionOnModel();
 		for(ExtractedLabelInfo item:items){
 			if(item.getLabelVariants()==null){continue;}
 			String result=""; 
@@ -34,9 +37,9 @@ public class ItemWriter_Mem_ThesConceptLabelExtractor implements ItemWriter<Extr
 				result+=lab+"|";
 			}
 			result= result.substring(0, result.length()-1);
-			Resource concept = model.getResource(item.getUri());
-			Literal labs = model.createLiteral(result, item.getLang());
-			model.add(concept,inner_conceptNoun ,labs);
+			Resource concept = mod.getResource(item.getUri());
+			Literal labs = mod.createLiteral(result, item.getLang());
+			mod.add(concept,inner_conceptNoun ,labs);
 		}
 	}	
 	
@@ -53,6 +56,6 @@ public class ItemWriter_Mem_ThesConceptLabelExtractor implements ItemWriter<Extr
 	/**
 	 * propiedades del bean
 	 */
-	public void setModel(Model model) {this.model = model;}
+	public void setModel(Bean_ModelContainer model) {this.model = model;}
 	
 }

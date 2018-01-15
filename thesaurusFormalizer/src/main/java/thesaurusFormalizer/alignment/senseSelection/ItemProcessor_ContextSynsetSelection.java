@@ -16,6 +16,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
 import net.didion.jwnl.data.Synset;
+import rdfProcessing.Bean_ModelContainer;
 import thesaurusFormalizer.rdfManager.ThesFormalizerRDFPropertyManager;
 import tools.wordnetManager.EnglishWordnetManager;
 
@@ -33,7 +34,7 @@ public class ItemProcessor_ContextSynsetSelection implements ItemProcessor<Resou
 	private static final Property skosNarrowerProp = ThesFormalizerRDFPropertyManager.skosNarrowerProp;
 	
 	
-	private Model model=null;
+	private Bean_ModelContainer model=null;
 	
 	private HashMap<String, Double> ocurrencias = new HashMap<String, Double>();
 	private HashMap<String, Double> distancia = new HashMap<String, Double>();
@@ -187,14 +188,15 @@ public class ItemProcessor_ContextSynsetSelection implements ItemProcessor<Resou
 	 * carga el modelo y extrae todos los synsets de todos los conceptos ya procesados
 	 */
 	public void beforeStep(StepExecution stepExecution) {
+		Model mod = model.startOrContinueTransactionOnModel();
 		
 		//contamos cuantas veces cada concento de wordnet es padre de uno alineado
-		obtainWordNetSynsetWeighGivenSet(model.listSubjects().toList(),ocurrencias,distancia);
+		obtainWordNetSynsetWeighGivenSet(mod.listSubjects().toList(),ocurrencias,distancia);
 		
 		//obtenemos para cada concepto el listado de todos los conceptos en la misma rama
 		//y el conteo de wordnet respecto de esa rama
 		
-		for(RDFNode item:model.listObjectsOfProperty(skosHasTopConcProp).toList()){
+		for(RDFNode item:mod.listObjectsOfProperty(skosHasTopConcProp).toList()){
 			List<Resource> conceptsInBranch = getNarrowers(item.asResource());
 			
 			HashMap<String, Double> ocur = new HashMap<String, Double>();
@@ -215,8 +217,11 @@ public class ItemProcessor_ContextSynsetSelection implements ItemProcessor<Resou
 	 * dado un cocnjunto de conceptos obtiene el peso de los de wordnet y su distancia media
 	 */
 	private void obtainWordNetSynsetWeighGivenSet(List<Resource> concepts, HashMap<String, Double> ocurr, HashMap<String, Double> dist){
+		
 		//contamos cuantas veces cada concento de wordnet es padre de uno alineado
-		for(Resource item:model.listSubjects().toList()){	
+		//CAMBIADO, CREO QUE HABIA UN ERROR ANTES, SI DA PROBLEMAS REVISAR A FONDO
+		//SE USABA TODO EL MODELO EN LUGAR DE LOS CONCEPTOS PROPORCIONADOS COMO PARAMETRO
+		for(Resource item:concepts){	
 			Statement exact = item.getProperty(exact_wordnetMatch);
 			Statement isa = item.getProperty(isa_wordnetMatch);
 			if((exact==null) && (isa == null)){ continue;}
@@ -266,7 +271,7 @@ public class ItemProcessor_ContextSynsetSelection implements ItemProcessor<Resou
 	/**
 	 * propiedades del item processor
 	 */
-	public void setModel(Model modelo) {
+	public void setModel(Bean_ModelContainer modelo) {
 		this.model = modelo;
 	}
 	

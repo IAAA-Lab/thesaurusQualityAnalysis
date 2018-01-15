@@ -17,12 +17,14 @@ import org.springframework.batch.repeat.RepeatStatus;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 
 import net.didion.jwnl.data.Synset;
 import net.didion.jwnl.data.Word;
 import rdfManager.JenaModelManager;
+import rdfProcessing.Bean_ModelContainer;
 import thesaurusFormalizer.rdfManager.ThesFormalizerRDFPropertyManager;
 import tools.wordnetManager.EnglishWordnetManager;
 
@@ -33,7 +35,8 @@ import tools.wordnetManager.EnglishWordnetManager;
 public class Tasklet_AlignInExcelReportGenerator implements Tasklet{
 
 	//propidades del tasklet
-	private String fileToAnalize,dolceFile;
+	private Bean_ModelContainer model;
+	private String dolceFile;
 	private String resultFile;
 	private List<String> branchsToDetail=new ArrayList<String>();
 	
@@ -60,7 +63,7 @@ public class Tasklet_AlignInExcelReportGenerator implements Tasklet{
 	 */
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 		//cargamos el modelo de jena
-		Model modelo = JenaModelManager.loadJenaModel(fileToAnalize);
+		Model modelo = model.startOrContinueTransactionOnModel();
 		dolceM = JenaModelManager.loadJenaModel(dolceFile);
 		
 		//creamos el excel
@@ -71,8 +74,9 @@ public class Tasklet_AlignInExcelReportGenerator implements Tasklet{
 	    int i=0;
 	    Sheet sheet = wb.createSheet("Aligns");
 	    addHeader(sheet.createRow(i++));
-	    for (Resource res: modelo.listSubjects().toList()){	    	
-	    	addResourceInfoToExcel(res,sheet.createRow(i++));
+	    ResIterator it = modelo.listSubjects();
+	    while (it.hasNext()){  	
+	    	addResourceInfoToExcel(it.next(),sheet.createRow(i++));
 	    }
 	    	    
 	    //creamos otra hoja con info de los conceptos de una rama solo
@@ -91,8 +95,9 @@ public class Tasklet_AlignInExcelReportGenerator implements Tasklet{
 	    i=0;
 	    sheet = wb.createSheet("Relations");
 	    addRelHeader(sheet.createRow(i++));
-	    for (Resource res: modelo.listSubjects().toList()){	    	
-	    	i=addRelationInfoToExcel(res,sheet,i);
+	    ResIterator ite =  modelo.listSubjects();
+	    while(ite.hasNext()){	        	
+	    	i=addRelationInfoToExcel(ite.next(),sheet,i);
 	    }
 	    
 	  //creamos otra hoja con info de los conceptos de una rama solo
@@ -111,6 +116,8 @@ public class Tasklet_AlignInExcelReportGenerator implements Tasklet{
 	    //guardamos el excel
 	    FileOutputStream fos = new FileOutputStream(resultFile);
 	    wb.write(fos); wb.close(); fos.close();
+	    
+	    model.finishTransactionOnModel();
 	    
 		return RepeatStatus.FINISHED;
 	}
@@ -392,9 +399,8 @@ public class Tasklet_AlignInExcelReportGenerator implements Tasklet{
 	/**
 	 * Propiedades del tasklet
 	 */
-	public void setFileToAnalize(String fileToAnalize) {this.fileToAnalize = fileToAnalize;}
+	public void setModel(Bean_ModelContainer model) {this.model = model;}
 	public void setDolceFile(String dolceFile) {this.dolceFile = dolceFile;}
-	
 	public void setResultFile(String resultFile) {this.resultFile = resultFile;}
 	public void setBranchsToDetail(List<String> branchsToDetail) {
 		this.branchsToDetail = branchsToDetail;
