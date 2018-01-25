@@ -9,16 +9,16 @@ public class SpanishMinimalStemmer {
 		    
 		    for (int i = 0; i < len; i++)
 		      switch(s[i]) {
-		        case 'Ã': 
-		        case 'Ã¡': s[i] = 'a'; break;		     
-		        case 'Ã“':
-		        case 'Ã³': s[i] = 'o'; break;
-		        case 'Ã‰':
-		        case 'Ã©': s[i] = 'e'; break;
-		        case 'Ãš':
-		        case 'Ãº': s[i] = 'u'; break;
-		        case 'Ã':
-		        case 'Ã­': s[i] = 'i'; break;
+		        case 'Á': 
+		        case 'á': s[i] = 'a'; break;		     
+		        case 'Ó':
+		        case 'ó': s[i] = 'o'; break;
+		        case 'É':
+		        case 'é': s[i] = 'e'; break;
+		        case 'Ú':
+		        case 'ú': s[i] = 'u'; break;
+		        case 'Í':
+		        case 'í': s[i] = 'i'; break;
 		      }
 		    
 		    switch(s[len-1]) {
