@@ -76,6 +76,23 @@
   			<artifactId>poi-ooxml</artifactId>
   			<version>3.15</version>
 		</dependency>
+		<dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>2.3.0</version>
+            <scope>test</scope>
+        </dependency>
+		<dependency>
+    		<groupId>com.github.jsurfer</groupId>
+    		<artifactId>jsurfer-gson</artifactId>
+    		<version>1.4.1</version>
+            <scope>test</scope>
+		</dependency>
+		<dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.4</version>
+       </dependency>
 	
 		
     </dependencies>
