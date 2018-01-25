@@ -1,4 +1,8 @@
-
+/.settings
 /target/
 /data/
 /plugins/
+/.classpath
+/.project
+/.springBeans
+/build.xml
