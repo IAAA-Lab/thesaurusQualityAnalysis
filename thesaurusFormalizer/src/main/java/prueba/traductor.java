@@ -10,8 +10,10 @@ package prueba;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+
 import rdfManager.JenaModelManager;
 
 public class traductor {

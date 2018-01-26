@@ -3,11 +3,10 @@ package thesaurusFormalizer.alignment.wordnetMatch;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.jena.rdf.model.Statement;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-
-import org.apache.jena.rdf.model.Statement;
 
 /**
  * dependiendo del idioma de una etiqueta redirecciona a las tareas de 

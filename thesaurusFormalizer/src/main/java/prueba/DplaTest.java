@@ -8,21 +8,15 @@
 package prueba;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.PrintStream;
-import java.util.Collection;
-import java.util.List;
-
 
 import org.jsfr.json.JsonPathListener;
 import org.jsfr.json.JsonSurfer;
 import org.jsfr.json.JsonSurferGson;
 import org.jsfr.json.ParsingContext;
 import org.junit.Test;
-
-import gate.creole.annic.apache.lucene.store.OutputStream;
 
 
 

@@ -16,11 +16,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 
-import org.apache.commons.io.output.FileWriterWithEncoding;
-import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
 
 public class ConsultaEuropeanaProveedores {
 		public static void main(String[] args) {

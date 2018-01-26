@@ -1,8 +1,7 @@
 package thesaurusFormalizer.refinement;
 
-import org.springframework.batch.item.ItemProcessor;
-
 import org.apache.jena.rdf.model.Resource;
+import org.springframework.batch.item.ItemProcessor;
 
 /**
  * refina las relaciones nt reemplazandolas por otras más precisas proporcionadas

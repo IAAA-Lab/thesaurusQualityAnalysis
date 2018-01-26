@@ -7,11 +7,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.batch.item.ItemProcessor;
-
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.springframework.batch.item.ItemProcessor;
 
 import net.didion.jwnl.data.Synset;
 import thesaurusFormalizer.rdfManager.ThesFormalizerRDFPropertyManager;

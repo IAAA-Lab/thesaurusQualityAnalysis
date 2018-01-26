@@ -6,10 +6,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.springframework.batch.item.ItemProcessor;
-
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.springframework.batch.item.ItemProcessor;
 
 import net.didion.jwnl.data.Synset;
 import thesaurusFormalizer.rdfManager.ThesFormalizerRDFPropertyManager;

@@ -2,17 +2,15 @@ package thesaurusFormalizer.extraction;
 
 import java.util.List;
 
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemWriter;
 
 import rdfProcessing.Bean_ModelContainer;
-
-import org.apache.jena.rdf.model.Literal;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-
 import thesaurusFormalizer.rdfManager.ThesFormalizerRDFPropertyManager;
 
 /**

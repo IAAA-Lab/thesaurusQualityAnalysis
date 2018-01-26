@@ -14,19 +14,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.batch.core.StepContribution;
-import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.repeat.RepeatStatus;
 
 import net.didion.jwnl.data.Synset;
 import net.didion.jwnl.data.Word;
@@ -36,7 +37,6 @@ import opennlp.tools.tokenize.SimpleTokenizer;
 import rdfProcessing.Bean_ModelContainer;
 import thesaurusFormalizer.rdfManager.ThesFormalizerRDFPropertyManager;
 import tools.wordnetManager.EnglishWordnetManager;
-import java.util.regex.*;
 
 /**
  * analiza los alineamientos de un tesauro con wordnet
@@ -1393,7 +1393,7 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 	/**
 	 * obtiene los narrows transititvos de un recurso incluido el
 	 */
-	private Set<Resource> getNarrows(Resource urib, Model modelo) {
+	/*private Set<Resource> getNarrows(Resource urib, Model modelo) {
 		Set<Resource> resl = new HashSet<Resource>();
 		if (resl.contains(urib)) {
 			System.err.println(urib);
@@ -1403,7 +1403,7 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 			resl.addAll(getNarrows(st.getResource(), modelo));
 		}
 		return resl;
-	}
+	}*/
 
 	/*******************************************************************************/
 	/**
