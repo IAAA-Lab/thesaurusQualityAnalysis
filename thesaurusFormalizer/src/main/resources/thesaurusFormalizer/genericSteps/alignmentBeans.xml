@@ -99,7 +99,6 @@
 	<!-- ############################################################# -->
 	<!-- (5) filtramos los synsets en función de la estructura del tesauro y wordnet -->			
 	<beans:bean id="filterhierarchySynset_processor" class="thesaurusFormalizer.alignment.senseSelection.ItemProcessor_ContextSynsetSelection"> 
-	
 		<beans:property name="model" ref="beanModelContainer" />		
 	</beans:bean> 	
 	<!-- ############################################################# -->
