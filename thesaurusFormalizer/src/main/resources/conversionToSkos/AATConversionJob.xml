@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<!-- ############################################################# -->
+	<!-- definicion del lanzador y repositorio de trabajos -->
+	<beans:import resource="../applicationContext.xml" />
+	
+	<!-- ############################################################# -->
+ 	<!-- ############################################################# -->
+	<!-- transformamos el tesauro tgm para que pueda ser procesado por la herramienta de formalización-->
+	<batch:job id="conversionToSkosJob">
+	    <!-- (1) cargamos el tesauro en un tdb2-->
+		<batch:step id="loadInTDB2" next="exportFromTDB2">
+			<batch:tasklet ref="loadInTDB2_tasklet"/>
+		</batch:step>
+		<!-- (2) exportamos el tesauro en un tdb2-->
+		<batch:step id="exportFromTDB2">
+			<batch:tasklet ref="exportFromTDB2_tasklet"/>
+		</batch:step>		
+	</batch:job>
+		
+	<!-- ############################################################# -->
+	<!-- (1) cargamos el tesauro en un tdb2 -->
+	<beans:bean id="loadInTDB2_tasklet" class="rdfProcessing.Tasklet_RDF_To_TDB2"> 
+		<beans:property name="sourceRDF" value="data/input/thesauri/AAT.nt" /> 
+		<beans:property name="destinationTDB" value="data/temp/tdb/AAT" />
+		<beans:property name="sourceFormat" value="N-TRIPLES" />
+	</beans:bean>	
+	
+	<!-- ############################################################# -->
+	<!-- (2) exportamos el tesauro de un tdb2 -->
+	<beans:bean id="exportFromTDB2_tasklet" class="rdfProcessing.Tasklet_TDB2_To_RDF"> 
+		<beans:property name="destRDFFile" value="data/temp/thesauri/AAT.ttl" /> 
+		<beans:property name="sourceTDBDir" value="data/temp/tdb/AAT" />
+		<beans:property name="format" value="TURTLE" />
+	</beans:bean>
+	
+</beans:beans>
