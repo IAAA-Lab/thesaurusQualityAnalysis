@@ -28,21 +28,27 @@ public class Tasklet_GenerateInverseNTBT implements Tasklet{
 	/***************************************************************/
 	/**
 	 * Lee un rdf y genera un tdb con el contenido de su modelo por defecto 
+	 * tambien borra todos los rdfs:seeAlso
 	 */
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 		Model modelo = model.startOrContinueTransactionOnModel();
 		
+		//añadimos narrower
 		StmtIterator it= modelo.listStatements(null,RDFPropertyManager.skosBroaderProp,(RDFNode)null);
 		while(it.hasNext()) {
 			Statement i = it.next();
 			modelo.add(i.getResource(), RDFPropertyManager.skosNarrowerProp, i.getSubject());
 		}
 		
+		//añadimos broader
 		it= modelo.listStatements(null,RDFPropertyManager.skosNarrowerProp,(RDFNode)null);
 		while(it.hasNext()) {
 			Statement i = it.next();
 			modelo.add(i.getResource(), RDFPropertyManager.skosBroaderProp, i.getSubject());
 		}
+		
+		//borramos los see also de rdfs
+		modelo.removeAll(null, modelo.getProperty("http://www.w3.org/2000/01/rdf-schema#seeAlso"), (RDFNode)null);
 		
 		model.finishTransactionOnModel();
 		return RepeatStatus.FINISHED;

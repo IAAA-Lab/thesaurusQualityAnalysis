@@ -15,30 +15,72 @@
  	<!-- ############################################################# -->
 	<!-- transformamos el tesauro tgm para que pueda ser procesado por la herramienta de formalización-->
 	<batch:job id="conversionToSkosJob">
-	    <!-- (1) cargamos el tesauro en un tdb2-->
-		<batch:step id="loadInTDB2" next="exportFromTDB2">
+	   <!-- (0) cargamos el tesauro en un tdb2 -->
+		<batch:step id="loadInTDB2" next="loadTDBModelIntoJobContext">
 			<batch:tasklet ref="loadInTDB2_tasklet"/>
 		</batch:step>
-		<!-- (2) exportamos el tesauro en un tdb2-->
+	    <!-- (1) cargamos el tesauro en un tdb2-->
+		<batch:step id="loadTDBModelIntoJobContext" next="addBTNTrelations">
+			<batch:tasklet ref="loadTDBModelIntoJobContext_tasklet"/>
+		</batch:step>
+		<!-- (2) añadimos todas las relaciones bt/nt que faltan (estan en un solo sentido) -->
+		<batch:step id="addBTNTrelations" next="exportFromTDB2">
+			<batch:tasklet ref="addBTNTrelations_tasklet"/>
+		</batch:step>
+		<!-- (3) exportamos el tesauro en un tdb2-->
 		<batch:step id="exportFromTDB2">
 			<batch:tasklet ref="exportFromTDB2_tasklet"/>
-		</batch:step>		
+		</batch:step>			
 	</batch:job>
 		
 	<!-- ############################################################# -->
-	<!-- (1) cargamos el tesauro en un tdb2 -->
+	
+	<!-- (0) cargamos el tesauro en un tdb2 -->
 	<beans:bean id="loadInTDB2_tasklet" class="rdfProcessing.Tasklet_RDF_To_TDB2"> 
-		<beans:property name="sourceRDF" value="data/input/thesauri/AAT.nt" /> 
-		<beans:property name="destinationTDB" value="data/temp/tdb/AAT" />
-		<beans:property name="sourceFormat" value="N-TRIPLES" />
+		<beans:property name="sourceRDF" value="data/input/thesauri/AAT.ttl" /> 
+		<beans:property name="destinationTDB" value="data/temp/tdb/aat" />
+		<beans:property name="sourceFormat" value="TURTLE" />
+	</beans:bean>
+	
+	<!-- ############################################################# -->
+	<!-- (1a) carga el tdb y lo deja en el modelo indicado -->
+	<beans:bean id="loadTDBModelIntoJobContext_tasklet" class="rdfProcessing.Tasklet_LoadRDFModelIntoJobContext"> 
+		<beans:property name="model" ref="beanModelContainer" />
+		<beans:property name="sourceTDB" value="data/temp/tdb/aat" /> 
+	</beans:bean>
+	
+	<!-- ############################################################# -->
+	<!-- (2) añadimos todas las relaciones bt/nt que faltan (estan en un solo sentido) -->
+	<beans:bean id="addBTNTrelations_tasklet" class="thesaurusFormalizer.rdfManager.Tasklet_GenerateInverseNTBT"> 
+		<beans:property name="model" ref="beanModelContainer" />
 	</beans:bean>	
 	
 	<!-- ############################################################# -->
-	<!-- (2) exportamos el tesauro de un tdb2 -->
+	<!-- (3) exportamos el tesauro de un tdb2 -->
 	<beans:bean id="exportFromTDB2_tasklet" class="rdfProcessing.Tasklet_TDB2_To_RDF"> 
 		<beans:property name="destRDFFile" value="data/temp/thesauri/AAT.ttl" /> 
-		<beans:property name="sourceTDBDir" value="data/temp/tdb/AAT" />
+		<beans:property name="sourceTDBDir" value="data/temp/tdb/aat" />
 		<beans:property name="format" value="TURTLE" />
 	</beans:bean>
+	
+	<!-- ############################################################# -->
+	<!-- ############################################################# -->
+	<!-- Modelo donde se almacenan los datos del tesauro para su formalizacion, usado en muchos pasos -->
+	<beans:bean id="beanModelContainer" class="rdfProcessing.Bean_ModelContainer"/>
+	
+<!-- 	 (1) cargamos el tesauro en un tdb2  -->
+<!-- 	<beans:bean id="loadInTDB2_tasklet" class="rdfProcessing.Tasklet_RDF_To_TDB2">  -->
+<!-- 		<beans:property name="sourceRDF" value="data/input/thesauri/AAT.nt" />  -->
+<!-- 		<beans:property name="destinationTDB" value="data/temp/tdb/AAT" /> -->
+<!-- 		<beans:property name="sourceFormat" value="N-TRIPLES" /> -->
+<!-- 	</beans:bean>	 -->
+	
+<!-- 	 ############################################################# --> 
+<!-- 	 (2) exportamos el tesauro de un tdb2 --> 
+<!-- 	<beans:bean id="exportFromTDB2_tasklet" class="rdfProcessing.Tasklet_TDB2_To_RDF">  -->
+<!-- 		<beans:property name="destRDFFile" value="data/temp/thesauri/AAT.ttl" />  -->
+<!-- 		<beans:property name="sourceTDBDir" value="data/temp/tdb/AAT" /> -->
+<!-- 		<beans:property name="format" value="TURTLE" /> -->
+<!-- 	</beans:bean> -->
 	
 </beans:beans>
