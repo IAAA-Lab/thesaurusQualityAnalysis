@@ -9,6 +9,8 @@ package prueba;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -19,26 +21,33 @@ import org.apache.jena.rdf.model.ModelFactory;
 
 
 
-public class PeticionGETother {
+public class PeticionGETphotoVocabulary {
 
 	public static void main(String[] args) throws Exception {
 		
 		try{
 			 			 		
-			 			
+			 String sDirectorio = "D:\\europeana\\photoVocabulary.txt";
+			 File archivo = new File(sDirectorio);
+			 FileReader fr = new FileReader(archivo);
+			 BufferedReader br = new BufferedReader(fr);
+			 String li;
 			 URL url;			 
 			 URLConnection con;
-			 FileWriter fw= new FileWriter("D:\\europeana\\photovocabulary.rdf");	
+			 FileWriter fw= new FileWriter("D:\\europeana\\photoVocabulary.rdf");	
 			 Model m = ModelFactory.createDefaultModel();
 			 Model m1=null;
 			 String buffer="";
 			 String linea="";
-			 String a="http://bib.arts.kuleuven.be/photoVocabulary/en/concepts/-photoVocabulary-";
+			 String a;
+			
 			 				    
-			 for (int i =10001; i <=31407; i++) {
-					
+			 while ((li = br.readLine()) != null) {
+				 
+				    a=li+".rdf";
+				 									
 					// Creando un objeto URL
-					url = new URL(a+i+".rdf");
+					url = new URL(a);
 					
 					// Realizando la petición GET
 					con = url.openConnection();
@@ -47,7 +56,7 @@ public class PeticionGETother {
 					 BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));					 	 
 					 buffer="";
 					
-					 System.out.println("se esta imprimiendo :" +i);
+					 System.out.println("se esta imprimiendo :" +li);
 			         while ((linea = in.readLine()) != null) {			            	
 			            	
 			            	buffer+=linea;        	
@@ -58,8 +67,10 @@ public class PeticionGETother {
 			            m.add(m1);
 					    
 			 } 			 
-			   m.write(fw);		
+			   m.write(fw);			   
 		       fw.close();
+		       br.close();
+		       
 		 		  
 		} catch (Exception e) {
 		    e.printStackTrace();
