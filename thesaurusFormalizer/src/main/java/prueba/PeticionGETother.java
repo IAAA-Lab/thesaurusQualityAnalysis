@@ -28,17 +28,17 @@ public class PeticionGETother {
 			 			
 			 URL url;			 
 			 URLConnection con;
-			 FileWriter fw= new FileWriter("D:\\europeana\\photovocabulary.rdf");	
+			 FileWriter fw= new FileWriter("D:\\europeana\\openUp.rdf");	
 			 Model m = ModelFactory.createDefaultModel();
 			 Model m1=null;
 			 String buffer="";
 			 String linea="";
-			 String a="http://bib.arts.kuleuven.be/photoVocabulary/en/concepts/-photoVocabulary-";
+			 String a="http://openup.nhm-wien.ac.at/commonNames/";
 			 				    
-			 for (int i =10001; i <=31407; i++) {
+			 for (int i =197908; i <=197909; i++) {
 					
 					// Creando un objeto URL
-					url = new URL(a+i+".rdf");
+					url = new URL(a+i);
 					
 					// Realizando la petición GET
 					con = url.openConnection();
@@ -52,11 +52,12 @@ public class PeticionGETother {
 			            	
 			            	buffer+=linea;        	
 			            				                
-			         }			            
+			         }	
+			           			          
 			            m1 = ModelFactory.createDefaultModel();
 			            m1.read(new ByteArrayInputStream(buffer.getBytes()), null);			            
 			            m.add(m1);
-					    
+			             
 			 } 			 
 			   m.write(fw);		
 		       fw.close();
