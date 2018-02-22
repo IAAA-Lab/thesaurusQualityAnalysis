@@ -328,7 +328,7 @@ public class ItemProcessor_RelationsRedefiner implements ItemProcessor<Resource,
 	/**
 	 * propiedades del tasklet
 	 */
-	public void setDolceModel(String dolceModel) {
+	public void setDolceModel(String dolceModel) throws Exception{
 		this.dolceModel = JenaModelManager.loadJenaModel(dolceModel);
 	}
 }
