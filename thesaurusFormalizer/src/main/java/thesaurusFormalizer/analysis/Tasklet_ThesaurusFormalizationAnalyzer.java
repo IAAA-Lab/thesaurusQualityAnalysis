@@ -601,10 +601,12 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 
 	private int getOrphanConcepts(Resource esquema, List<Resource> concepts) {
 		int result = 0;
-		List<Statement> var = esquema.listProperties(ThesFormalizerRDFPropertyManager.skosHasTopConcProp).toList();
-		List<Resource> TopConcept = new ArrayList<Resource>();		
-
-		for (Statement st : var) {
+		//esto implica que el modelo no tiene concept esquema. no mpdemos analizar esto
+		if(esquema==null) {return 0;}
+		List<Resource> TopConcept = new ArrayList<Resource>();
+		Iterator<Statement> it = esquema.listProperties(ThesFormalizerRDFPropertyManager.skosHasTopConcProp);			
+		while(it.hasNext()) {
+			Statement st = it.next();
 			TopConcept.add(st.getResource());
 		}
 

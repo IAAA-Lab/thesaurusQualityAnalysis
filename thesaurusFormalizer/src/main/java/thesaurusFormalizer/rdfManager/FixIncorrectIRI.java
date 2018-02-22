@@ -18,8 +18,8 @@ public class FixIncorrectIRI {
 
 	public static void main(String[] args) {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader("data/input/thesauri/UNESCO.skos.xml"));
-			BufferedWriter bw = new BufferedWriter( new FileWriter("data/input/thesauri/UNESCOc.skos.xml"));
+			BufferedReader br = new BufferedReader(new FileReader("data/input/thesauri/culturaItalia.skos.xml"));
+			BufferedWriter bw = new BufferedWriter( new FileWriter("data/input/thesauri/culturaItaliac.skos.xml"));
 			
 			String line = br.readLine();
 			while(line!=null) {
