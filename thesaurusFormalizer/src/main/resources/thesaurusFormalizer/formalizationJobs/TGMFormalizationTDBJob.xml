@@ -27,4 +27,19 @@
 			<batch:job ref="analysisJob"/>
 		</batch:step>
 	</batch:job>
+	
+	<!-- (2) tasklet que muestra datos de emparejamientos  con wnet y dolce-->
+	<beans:bean id="wordNetAlignAnalysis_tasklet" class="thesaurusFormalizer.analysis.Tasklet_ThesaurusFormalizationAnalyzer"> 
+		<beans:property name="model" ref="beanModelContainerAnalysis" />
+		<beans:property name="langsToAnalyze">
+			<beans:list>
+				<beans:value>en</beans:value>
+				<beans:value>es</beans:value>
+				<beans:value>fr</beans:value>
+			</beans:list>
+		</beans:property>
+		<beans:property name="resultDir" value="${analysis.directory}" />
+		<beans:property name="isTGM" value="true" />
+	</beans:bean>
+	
 </beans:beans>

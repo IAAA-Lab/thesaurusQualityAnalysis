@@ -43,13 +43,17 @@
 			</beans:props>
 		</beans:property>			
 	</beans:bean>
+	
+	<!-- (2) tasklet que muestra datos de emparejamientos  con wnet y dolce-->
 	<beans:bean id="wordNetAlignAnalysis_tasklet" class="thesaurusFormalizer.analysis.Tasklet_ThesaurusFormalizationAnalyzer"> 
-		<beans:property name="fileToAnalize" value="${enriched.thesaurus.file}" /> 
+		<beans:property name="model" ref="beanModelContainerAnalysis" />
 		<beans:property name="langsToAnalyze">
 			<beans:list>
-				<beans:value>en</beans:value>
+				<beans:value>en</beans:value>				
 			</beans:list>
 		</beans:property>
 		<beans:property name="resultDir" value="${analysis.directory}" />
 	</beans:bean>
+	
+	
 </beans:beans>
