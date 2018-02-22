@@ -2,13 +2,8 @@ package thesaurusFormalizer.rdfManager;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 
 /** 
  * corrige las iris de un rdf con espacios quitando los espacios, lo hace con el texto a pelo, es un apaño
