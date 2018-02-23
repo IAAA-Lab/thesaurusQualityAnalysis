@@ -1292,7 +1292,7 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 	/**
 	 * detectamos ciclos
 	 */
-	Set<String> conceptsInCycle = new HashSet<String>();
+	private Set<String> conceptsInCycle = new HashSet<String>();
 
 	private int detectCicles(List<Resource> concepts) {
 		int cicles = 0;
