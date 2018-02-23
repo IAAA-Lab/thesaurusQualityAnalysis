@@ -1323,7 +1323,7 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 			if (!conceptsInCycle.contains(bdersURi) && !uris.contains(bdersURi)) {
 				uris.add(bdersURi);
 				cicles += detectCicles(bders, uris, prop);
-			} else {
+			} else if (uris.contains(bdersURi)){
 				cicles++;
 				conceptsInCycle.addAll(uris);
 			}
@@ -1372,7 +1372,7 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 				Set<Integer> uris = new HashSet<Integer>(urisOr);
 				uris.add(uriint);
 				cicles+=detectCiclesTGM(bders, uris, prop);
-			} else {
+			} else if (urisOr.contains(uriint)){
 				cicles++;
 				conceptsInCycleTGM.addAll(urisOr);
 			}
