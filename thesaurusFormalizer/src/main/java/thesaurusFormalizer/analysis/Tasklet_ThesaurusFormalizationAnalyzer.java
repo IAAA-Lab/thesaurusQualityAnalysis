@@ -1326,6 +1326,8 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 			} else if (uris.contains(bdersURi)){
 				cicles++;
 				conceptsInCycle.addAll(uris);
+			}else if(conceptsInCycle.contains(bdersURi)){
+				conceptsInCycle.addAll(uris);
 			}
 		}
 		return cicles;
@@ -1374,6 +1376,8 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 				cicles+=detectCiclesTGM(bders, uris, prop);
 			} else if (urisOr.contains(uriint)){
 				cicles++;
+				conceptsInCycleTGM.addAll(urisOr);
+			} if(conceptsInCycle.contains(bdersURi)){
 				conceptsInCycleTGM.addAll(urisOr);
 			}
 		}
