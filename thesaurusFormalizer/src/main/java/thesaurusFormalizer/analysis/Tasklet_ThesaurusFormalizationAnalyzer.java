@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -47,6 +48,7 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 	private Bean_ModelContainer model;
 	private String resultDir = "data/output/analysis";
 	private String[] langsToAnalyze = new String[] { "en", "es" };
+	private boolean isTGM =false;
 
 	// modelo acceso a wordnet
 	private EnglishWordnetManager jwnl = new EnglishWordnetManager();
@@ -599,10 +601,12 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 
 	private int getOrphanConcepts(Resource esquema, List<Resource> concepts) {
 		int result = 0;
-		List<Statement> var = esquema.listProperties(ThesFormalizerRDFPropertyManager.skosHasTopConcProp).toList();
-		List<Resource> TopConcept = new ArrayList<Resource>();		
-
-		for (Statement st : var) {
+		//esto implica que el modelo no tiene concept esquema. no mpdemos analizar esto
+		if(esquema==null) {return 0;}
+		List<Resource> TopConcept = new ArrayList<Resource>();
+		Iterator<Statement> it = esquema.listProperties(ThesFormalizerRDFPropertyManager.skosHasTopConcProp);			
+		while(it.hasNext()) {
+			Statement st = it.next();
 			TopConcept.add(st.getResource());
 		}
 
@@ -964,8 +968,14 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 		informe.println("Número de relaciones RT incorrectas: " + relatedsN);
 
 		// obtenemos el número de ciclos
-		System.out.println("detectIncorrectHierarchy");
-		int numCiclo = detectCicles(concepts);
+		int numCiclo =0;
+		if(!isTGM) {
+			System.out.println("detectIncorrectHierarchy");
+			numCiclo = detectCicles(concepts);
+		}else {
+			System.out.println("detectIncorrectHierarchyTGM");
+			numCiclo = detectCiclesTGM(concepts);
+		}
 
 		// mostramos el número de ciclos
 		informe.println("-----------------------------------------");
@@ -1282,33 +1292,98 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 	/**
 	 * detectamos ciclos
 	 */
-	Set<String> conceptsInCycle = new HashSet<String>();
+	private Set<String> conceptsInCycle = new HashSet<String>();
 
 	private int detectCicles(List<Resource> concepts) {
 		int cicles = 0;
 		for (Resource res : concepts) {
+			if(conceptsInCycle.contains(res.getURI())) {continue;}
 			Set<String> uris = new HashSet<String>();
 			uris.add(res.getURI());
-			cicles += detectCicles(res, uris, skosBroaderProp);
-			cicles += detectCicles(res, uris, skosNarrowerProp);
+			int ciclesloc = detectCicles(res, uris, skosNarrowerProp);
+			if(ciclesloc >0){
+				cicles += 1;
+			}else {
+				ciclesloc = detectCicles(res, uris, skosBroaderProp);
+				if(ciclesloc >0){
+					cicles += 1;
+				}
+			}
 		}
 		return cicles;
 	}
 
 	private int detectCicles(Resource res, Set<String> urisOr, Property prop) {
 		int cicles = 0;
-		for (Statement bders : res.listProperties(prop).toList()) {
+		Iterator<Statement> it = res.listProperties(prop);
+		while(it.hasNext()) {
+			Resource bders = it.next().getResource();
+			String bdersURi = bders.getURI();
 			Set<String> uris = new HashSet<String>(urisOr);
-			if (!uris.contains(bders.getResource().getURI())) {
-				uris.add(bders.getResource().getURI());
-				detectCicles(bders.getResource(), uris, prop);
-			} else {
+			if (!conceptsInCycle.contains(bdersURi) && !uris.contains(bdersURi)) {
+				uris.add(bdersURi);
+				cicles += detectCicles(bders, uris, prop);
+			} else if (uris.contains(bdersURi)){
 				cicles++;
+				conceptsInCycle.addAll(uris);
+			}else if(conceptsInCycle.contains(bdersURi)){
 				conceptsInCycle.addAll(uris);
 			}
 		}
 		return cicles;
 	}
+	
+	Set<Integer> conceptsInCycleTGM = new HashSet<Integer>();
+	
+	/**
+	 * Codigo a modificar para el tesauro del tgm, esta adaptado para la estructura de este tesauro
+	 * @param concepts
+	 * @return
+	 */
+	private int detectCiclesTGM(List<Resource> concepts) {
+		int cicles = 0;
+		for (Resource res : concepts) {
+			Set<Integer> uris = new HashSet<Integer>();
+			String uri = res.getURI();
+			if(uri==null) {continue;}
+			System.err.println("--> "+Integer.parseInt(uri.substring(uri.length()-6)));
+			Integer uriint = Integer.parseInt(uri.substring(uri.length()-6));
+			if(conceptsInCycleTGM.contains(uriint)) {continue;}
+			uris.add(uriint);
+			int ciclesloc = detectCiclesTGM(res, uris, skosNarrowerProp);
+			if(ciclesloc >0){
+				cicles += 1;
+			}else {
+				ciclesloc = detectCiclesTGM(res, uris, skosBroaderProp);
+				if(ciclesloc >0){
+					cicles += 1;
+				}
+			}
+		}
+		return cicles;
+	}
+
+	private int detectCiclesTGM(Resource res, Set<Integer> urisOr, Property prop) {
+		int cicles = 0;
+		Iterator<Statement> it = res.listProperties(prop);
+		while(it.hasNext()) {
+			Resource bders = it.next().getResource();
+			String bdersURi = bders.getURI();
+			Integer uriint = Integer.parseInt(bdersURi.substring(bdersURi.length()-6));				
+			if (!conceptsInCycleTGM.contains(uriint) && !urisOr.contains(uriint)) {
+				Set<Integer> uris = new HashSet<Integer>(urisOr);
+				uris.add(uriint);
+				cicles+=detectCiclesTGM(bders, uris, prop);
+			} else if (urisOr.contains(uriint)){
+				cicles++;
+				conceptsInCycleTGM.addAll(urisOr);
+			} if(conceptsInCycle.contains(bdersURi)){
+				conceptsInCycleTGM.addAll(urisOr);
+			}
+		}
+		return cicles;
+	}
+	
 
 	/*******************************************************/
 	/**
@@ -1317,7 +1392,12 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 	private int detectIncorrectRTs(List<Resource> concepts) {
 		int relatedsN = 0;
 
-		for (Resource res : concepts) {
+		for (Resource res : concepts) {		
+			//si el termino no tiene relacionados nos lo saltamos
+			List<Statement> relateds = res.listProperties(skosRelatedProp).toList();
+			if(relateds.size()==0) {continue;}
+			
+			//buscamos su jerarquia y sus hermanos
 			Set<Resource> broaders = new HashSet<Resource>();
 			Set<Resource> narrowers = new HashSet<Resource>();
 			Set<Resource> brothers = new HashSet<Resource>();
@@ -1327,7 +1407,6 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 			Set<String> uris = new HashSet<String>();
 			uris.add(res.getURI());
 
-			// System.out.println("broaders "+ res.getURI());
 			while (elements.size() > 0) {
 				Resource e = elements.poll();
 				broaders.add(e);
@@ -1339,7 +1418,6 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 				}
 			}
 
-			// System.out.println("narrowerds");
 			elements.add(res);
 			uris = new HashSet<String>();
 			uris.add(res.getURI());
@@ -1354,7 +1432,6 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 				}
 			}
 
-			// System.out.println("brothers");
 			for (Statement bders : res.listProperties(skosBroaderProp).toList()) {
 				elements.add(bders.getResource());
 			}
@@ -1364,14 +1441,9 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 				}
 			}
 
-			// System.out.println("analisis");
-			for (Statement related : res.listProperties(skosRelatedProp).toList()) {
-
+			for (Statement related : relateds) {
 				Resource rel = related.getResource();
-				if (broaders.contains(rel) || narrowers.contains(rel) || brothers.contains(rel)) {
-					// System.out.println("incorrect
-					// related:"+getEnglishPrefLabel(res)+"--"+getEnglishPrefLabel(rel));
-
+				if (broaders.contains(rel) || narrowers.contains(rel) || brothers.contains(rel)) {					
 					relatedsN++;
 				}
 			}
@@ -1412,4 +1484,5 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 	public void setModel(Bean_ModelContainer model) {this.model = model;}
 	public void setLangsToAnalyze(String[] langsToAnalyze) {this.langsToAnalyze = langsToAnalyze;}
 	public void setResultDir(String resultDir) {this.resultDir = resultDir;}
+	public void setIsTGM(boolean isTGM) {this.isTGM = isTGM;}
 }

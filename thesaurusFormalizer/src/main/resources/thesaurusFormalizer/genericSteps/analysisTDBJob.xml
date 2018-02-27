@@ -22,14 +22,14 @@
 		</batch:step>
 	    
 	    <!-- (2) tasklet que muestra datos de emparejamientos  con wnet y dolce-->
-		<batch:step id="wnetAlignAnalysis" next="wnetExcelReport">
+		<batch:step id="wnetAlignAnalysis"> <!-- next="wnetExcelReport"> -->
 			<batch:tasklet ref="wordNetAlignAnalysis_tasklet"/>
 		</batch:step>
 		
 		<!-- (3) tasklet que genera un report en excel con los alineamientos para poder verificar su calidad-->
-		<batch:step id="wnetExcelReport">
-			<batch:tasklet ref="vgiExcelReport_tasklet"/>
-		</batch:step>
+<!-- 		<batch:step id="wnetExcelReport"> -->
+<!-- 			<batch:tasklet ref="vgiExcelReport_tasklet"/> -->
+<!-- 		</batch:step> -->
 	</batch:job>
 	
 </beans:beans>
