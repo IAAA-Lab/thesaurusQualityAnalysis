@@ -35,7 +35,8 @@ public class PeticionGETother {
 			 String linea="";
 			 String a="http://openup.nhm-wien.ac.at/commonNames/";
 			 				    
-			 for (int i =197908; i <=197909; i++) {
+			 for (int i =700001; i <=800000; i++) {
+				 
 					
 					// Creando un objeto URL
 					url = new URL(a+i);
@@ -53,11 +54,14 @@ public class PeticionGETother {
 			            	buffer+=linea;        	
 			            				                
 			         }	
-			           			          
+			        try {   			          
 			            m1 = ModelFactory.createDefaultModel();
 			            m1.read(new ByteArrayInputStream(buffer.getBytes()), null);			            
 			            m.add(m1);
-			             
+			        } catch  (Exception e){
+					    e.printStackTrace();
+				    }	
+			   //Thread.sleep(1000);
 			 } 			 
 			   m.write(fw);		
 		       fw.close();

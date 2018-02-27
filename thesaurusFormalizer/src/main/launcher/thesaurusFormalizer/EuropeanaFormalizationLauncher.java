@@ -5,11 +5,11 @@ import org.springframework.batch.core.launch.support.CommandLineJobRunner;
 /**
  * Lanzador del programa de extracción de nombres de etiquetas de conceptos
  */
-public class europeanaFormalizationLauncher {
+public class EuropeanaFormalizationLauncher {
 	// trabajo de spring a ejecutar
 	private static final String[] jobC = {
-			"thesaurusFormalizer/formalizationJobs/europeanaFormalizationJob.xml",
-			"europeanaFormalizationJob" };
+			"thesaurusFormalizer/formalizationJobs/EuropeanaFormalizationJob.xml",
+			"EuropeanaFormalizationJob" };
 
 	/*****************************************************************/
 	/**
