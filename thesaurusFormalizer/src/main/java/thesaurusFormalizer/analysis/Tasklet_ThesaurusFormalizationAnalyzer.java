@@ -980,7 +980,11 @@ public class Tasklet_ThesaurusFormalizationAnalyzer implements Tasklet {
 		// mostramos el número de ciclos
 		informe.println("-----------------------------------------");
 		informe.println("Número de ciclos: " + numCiclo);
-		informe.println("Número de conceptos en el ciclo: " + conceptsInCycle.size());	
+		informe.println("Número de conceptos en el ciclo: " + conceptsInCycle.size());
+		informe.println("Número de conceptos en el ciclo: " + conceptsInCycleTGM.size());	
+		
+		
+		
 		
 		
 		// obtenemos el número de BT/NT incorrectas

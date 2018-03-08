@@ -30,14 +30,14 @@
 	<beans:bean id="loadInTDB2_tasklet" class="rdfProcessing.Tasklet_RDF_To_TDB2"> 
 		<beans:property name="sourceRDF" value="data/input/thesauri/mesh2018.nt" /> 
 		<beans:property name="destinationTDB" value="data/temp/tdb/mesh" />
-		<beans:property name="sourceFormat" value="RDF/XML" />
+		<beans:property name="sourceFormat" value="N-TRIPLES" />
 	</beans:bean>	
 	
 	<!-- ############################################################# -->
 	<!-- (2) exportamos el tesauro de un tdb2 -->
 	<beans:bean id="exportFromTDB2_tasklet" class="rdfProcessing.Tasklet_TDB2_To_RDF"> 
-		<beans:property name="destRDFFile" value="data/temp/thesauri/gemet.ttl" /> 
-		<beans:property name="sourceTDBDir" value="data/temp/tdb/gemet" />
+		<beans:property name="destRDFFile" value="data/temp/thesauri/mesh2018.ttl" /> 
+		<beans:property name="sourceTDBDir" value="data/temp/tdb/mesh" />
 		<beans:property name="format" value="TURTLE" />
 	</beans:bean>
 	
