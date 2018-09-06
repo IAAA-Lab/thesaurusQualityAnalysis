@@ -14,3 +14,7 @@ C8-Completeness of preferred labels.
 C9-Completeness of definitions         
 C10-Non-existence of duplicated labels.    
 C11-Completeness of BT/NT       
+
+In thesaurusFormalizer/src/main/resources/thesaurusFormalizer/formalizationJobs there are the configurations files defining the currently analysed thesauri
+
+Due to the dimensions of the thesauri, the thesauri themselves are not uploaded in this project
