@@ -2,6 +2,7 @@
 Tool for the analysis of the quality of thesauri according to ISO 25964
 
 It checks the following quality aspects
+
 C1-Non-exist. of non-alp. chr. in labels.               
 C2-Non-use of adv./ini. art. in labels.                
 C3-Non-use of acronyms in pref. labels.                 
